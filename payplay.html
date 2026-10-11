@@ -67,8 +67,8 @@ button.metric{width:100%;border:0;text-align:left;cursor:pointer;color:inherit;f
 .benefit-more{background:#fff;color:#325feb;border:1px solid #adc4ff;border-radius:12px;padding:11px 15px;font-weight:850}.benefit-disclaimer{font-size:11px;color:#667485;line-height:1.65;margin-top:11px}
 .svcdetails{margin-top:14px;border:1px solid var(--line);border-radius:16px;padding:12px 16px;background:#fff}.svcdetails summary{cursor:pointer;font-weight:750;color:#4e5968}.svcdetails[open] summary{margin-bottom:8px}
 @media(max-width:860px){.benefit-grid,.money-types{grid-template-columns:1fr}.benefit-card{min-height:0}.benefit-intro{padding:14px}}
-</style></head><body>
-<header class="top"><div class="wrap topin"><button class="logo" onclick="openPage('home')" aria-label="페이플레이 세일즈북 홈">PayPlay <small>페이플레이 세일즈북</small></button><nav class="nav" aria-label="주요 메뉴"><button data-page="home" class="active">세일즈북 홈</button><button data-page="services">서비스 찾아보기</button><button data-page="road">영업 로드맵</button><button data-page="benefits">지원사업·혜택 검색</button><a class="calc-nav" href="https://ceopotal-habang.vercel.app/" target="_blank" rel="noopener noreferrer" title="외부 계산 포털 새 탭에서 열기">영업계산기 ↗</a><button data-page="consult">관심 상품·상담<span class="navcnt" id="cartcount" hidden>0</span></button></nav><div class="top-actions"><button class="backbtn" onclick="goBack()" aria-label="이전 화면">← 뒤로</button><button class="pill" onclick="openPage('road')">영업 로드맵 시작</button></div></div></header>
+.calc-layout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.calc-tile{border:1px solid var(--line);background:white;border-radius:16px;padding:16px;text-align:left;font-weight:750;color:var(--ink)}.calc-tile.active{border-color:var(--blue);background:var(--soft);color:var(--blue)}.calc-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:20px 0}.calc-field{display:flex;flex-direction:column;gap:6px;color:var(--gray);font-size:14px}.calc-field input,.calc-field select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--ink);background:#fff}.calc-output{padding:20px;border-radius:18px;background:var(--soft);color:var(--navy);margin:20px 0}.calc-output strong{font-size:clamp(24px,3vw,36px);display:block;margin:5px 0}.calc-note{border-left:3px solid var(--blue);padding:12px 14px;background:#f6f8ff;line-height:1.65;color:#526071;font-size:13px}.calc-wrap{max-width:980px}.calc-tool h3{margin:24px 0 8px}@media(max-width:720px){.calc-layout{grid-template-columns:repeat(2,minmax(0,1fr))}.calc-form{grid-template-columns:1fr}}</style></head><body>
+<header class="top"><div class="wrap topin"><button class="logo" onclick="openPage('home')" aria-label="페이플레이 세일즈북 홈">PayPlay <small>페이플레이 세일즈북</small></button><nav class="nav" aria-label="주요 메뉴"><button data-page="home" class="active">세일즈북 홈</button><button data-page="services">서비스 찾아보기</button><button data-page="road">영업 로드맵</button><button data-page="benefits">지원사업·혜택 검색</button><button data-page="calculator">영업계산기</button><button data-page="consult">관심 상품·상담<span class="navcnt" id="cartcount" hidden>0</span></button></nav><div class="top-actions"><button class="backbtn" onclick="goBack()" aria-label="이전 화면">← 뒤로</button><button class="pill" onclick="openPage('road')">영업 로드맵 시작</button></div></div></header>
 <main id="app"></main><div class="drawerbg" id="back" onclick="if(event.target===this)closeDrawer()"><div class="drawer" id="drawer" role="dialog" aria-label="상세 패널" tabindex="-1"></div></div><footer class="footer"><div class="wrap"><strong style="font-size:22px">페이플레이 세일즈북 · PayPlay Salesbook</strong><p>사장님에게 필요한 지원과 서비스를 한 곳에서 살펴봐요.</p><p class="mini" style="color:#9caace">세일즈북 v1.1 · 내부 사용자 테스트 시안 · 실제 지원 가능 여부 및 계약 조건은 확인이 필요해요. 공고의 공식 원문을 기준으로 안내합니다. <a href="/" style="color:#9caace">DCC 홈</a></p></div></footer><script src="./support-programs.js"></script><script>
 const groups=[
 {id:'finance',name:'자금·정책금융',desc:'운영자금, 시설자금, 재난자금과 상환 조건',items:['정책금융','보증·금융비용']},
@@ -310,10 +310,77 @@ function renderRefund(){return wrapTab(`<div class="panel"><h3 style="margin-top
 function saveFlowRecord(){state.memo=(document.getElementById('memo')||{}).value||'';const ps=state.selected.map(id=>(programs.find(p=>p.id===id)||{}).name).filter(Boolean);addRecord('상담 신청',`${state.stage} / ${state.industry} / ${state.region} · 관심 분야 ${(groups.find(g=>g.id===state.group)||{}).name||'전체'} · 공고 ${ps.length}건 · 상품 ${state.cart.length}개`);toast('상담 신청을 시연 기록으로 남겼어요. 실제 접수는 진행되지 않았습니다.');state.ctab='status';pushNav();render();window.scrollTo(0,0)}
 function renderStatus(){const rs=getRecords(),steps=['접수','검토','상담','결과 안내'];return wrapTab(`<div class="panel"><h3 style="margin-top:0">상담 및 진행 상태</h3><p class="sub">이 브라우저에 저장된 시연 기록입니다. 실제 상담 접수·로그인·고객 DB는 아직 연결되지 않았으며, 상태는 자동으로 바뀌지 않습니다.</p>${rs.length?rs.map(r=>`<div class="selrow" style="align-items:flex-start"><div><span class="badge demo">DEMO</span> <strong>${esc(r.type)}</strong><div class="small">${esc(r.summary)}</div><div class="small">${esc(r.date)} · ${esc(r.status)}</div><div class="steps" style="margin:8px 0 0">${steps.map((s,i)=>`<span class="step ${i===0?'now':''}">${i+1} ${s}</span>`).join('')}</div></div></div>`).join(''):'<div class="detail">아직 기록이 없어요. 상담 신청, 환급 검토 요청, 견적 요청을 하면 여기에 표시됩니다.</div>'}<div class="actionrow">${btn('상담 신청 하기',"setCTab('flow')",'pill ghost')}${rs.length?`<button class="back" onclick="clearRecords()">기록 모두 지우기</button>`:''}</div></div>`)}
 function renderConsultPage(){const t=state.ctab;return consultTabs()+(t==='wish'?renderWish():t==='compare'?renderCompare():t==='refund'?renderRefund():t==='status'?renderStatus():renderConsultFlow())}
+
+/* ---------- native sales calculators: independently authored, illustrative ---------- */
+const salesTools=[
+ ['tax','통합 절세','연 매출·경비 입력으로 기초 손익 진단'],
+ ['vat','부가가치세','매출·매입 세액 간이 계산'],
+ ['income','종합소득세','과세표준 기반 누진세 계산'],
+ ['yellow','노란우산','납입액·세율 기준 절세 추정'],
+ ['penalty','가산세','입력 세율·일수 기준 시뮬레이션'],
+ ['delivery','배달수수료','수수료 변경 전후 비교'],
+ ['internet','인터넷 요금','기존·변경 요금 비교'],
+ ['table','테이블오더','대수·기간별 총절감액'],
+ ['labor','인건비·노무','인원·급여·기간별 인건비'],
+ ['book','세무기장비','월 기장료·연간 계약비'],
+ ['fire','화재보험','보험료 비교 및 점검'],
+ ['card','사업자카드','이용액·혜택률 계산'],
+ ['fund','정책자금','대출 원리금 계산'],
+ ['support','지원금','지원 규모·자부담 계산'],
+ ['schedule','세무 일정','일정·준비사항 안내']
+];
+let selectedSalesTool='table';
+const calcWon=v=>Math.round(Number(v)||0).toLocaleString('ko-KR')+'원';
+const calcNum=id=>Math.max(0,Number(document.getElementById(id)?.value)||0);
+function salesCalculatorPage(){
+ return '<section class="section"><div class="wrap calc-wrap"><span class="eyebrow">PayPlay Salesbook · 내장 도구</span><h2 style="margin-top:18px">영업계산기</h2><p class="sub">외부 사이트 이동 없이 직접 계산합니다. 계산 결과는 비교 예시이며 실제 세무신고·지원금·보험료 산정 결과가 아닙니다.</p><div class="calc-layout">'+salesTools.map(([id,name,desc])=>'<button type="button" class="calc-tile '+(id===selectedSalesTool?'active':'')+'" onclick="chooseSalesTool(\''+id+'\')"><strong>'+name+'</strong><div class="small">'+desc+'</div></button>').join('')+'</div><div id="calc-work" class="feature calc-tool" style="margin-top:24px">'+salesToolBody()+'</div></div></section>'
+}
+function chooseSalesTool(id){if(!salesTools.some(x=>x[0]===id))return;selectedSalesTool=id;render();requestAnimationFrame(()=>document.getElementById('calc-work')?.scrollIntoView({block:'nearest'}))}
+function calcFields(items){return '<div class="calc-form">'+items.map(([id,label,val])=>'<label class="calc-field">'+label+'<input type="number" id="'+id+'" min="0" value="'+val+'" inputmode="decimal" oninput="salesRecalc()"></label>').join('')+'</div>'}
+function calcStatic(name,detail){return '<h3>'+name+'</h3><div class="calc-note">'+detail+'</div><p class="small">정확한 적용 요건·연도별 한도·법적 해석은 관계기관의 최신 공식 자료 또는 자격 전문가에게 확인해야 합니다.</p>'}
+function salesToolBody(){
+ const t=selectedSalesTool, title=salesTools.find(x=>x[0]===t)?.[1]||'계산기';
+ let f='',note='',kind=t;
+ if(t==='table'){f=calcFields([['c1','기존 대당 월 요금 (원)',22000],['c2','변경 대당 월 요금 (원)',11000],['c3','테이블오더 대수',20],['c4','사용 개월',36]]);note='동일 대수·기간의 단순 요금 차이입니다. 설치비·약정·기기 소유권·부가세·유지보수·교체비용은 별도 확인이 필요합니다.'}
+ else if(t==='internet'){f=calcFields([['c1','기존 월 요금 (원)',33000],['c2','변경 월 요금 (원)',9000],['c3','비교 개월 수',12]]);note='실제 할인·약정·설치비·결합조건을 반영하지 않은 예시입니다.'}
+ else if(t==='delivery'){f=calcFields([['c1','월 배달 주문 매출 (원)',5000000],['c2','기존 수수료율 (%)',10],['c3','변경 수수료율 (%)',5],['c4','적용 개월 수',12]]);note='배달비, 광고비, 결제 수수료, VAT, 프로모션 및 계약조건은 포함하지 않습니다.'}
+ else if(t==='labor'){f=calcFields([['c1','근로자 수',3],['c2','1인 월 급여 (원)',2500000],['c3','개월 수',12]]);note='급여 총액 계산입니다. 4대보험 사업주 부담·퇴직급여·수당·세금은 미포함입니다.'}
+ else if(t==='fund'){f=calcFields([['c1','대출 원금 (원)',50000000],['c2','연 이자율 (%)',4],['c3','상환 기간 (개월)',36]]);note='원리금균등 상환 예시입니다. 실제 거치기간·보증료·수수료·금리·심사 결과에 따라 달라집니다.'}
+ else if(t==='support'){f=calcFields([['c1','지원 대상 사업비 (원)',10000000],['c2','지원 비율 (%)',70],['c3','지원금 상한 (원)',7000000]]);note='공식 모집사업과 무관한 가정값입니다. 실제 지원금·자부담률·선정 여부는 공고마다 다릅니다.'}
+ else if(t==='vat'){f=calcFields([['c1','과세 매출 공급가액 (원)',50000000],['c2','공제 가능한 매입 공급가액 (원)',30000000],['c3','VAT 세율 (%)',10]]);note='매출세액−매입세액만 산출하는 단순 모델입니다. 면세·불공제·의제매입·세액공제 등은 반영되지 않습니다.'}
+ else if(t==='income'){f=calcFields([['c1','연 과세표준 (원)',40000000]]);note='2025년 기준 일반적인 종합소득세 기본세율 구조를 참고한 단순 산출세액 추정입니다. 지방소득세·세액공제·감면·개인별 예외는 제외합니다.'}
+ else if(t==='yellow'){f=calcFields([['c1','월 납입액 (원)',250000],['c2','적용 소득세 한계세율 (%)',15],['c3','공제 인정 한도 (원)',3000000]]);note='납입액 중 공제 가능한 금액 × 가정 세율의 예시입니다. 실제 소득구간별 공제한도·가입 요건·지방소득세는 확인이 필요합니다.'}
+ else if(t==='penalty'){f=calcFields([['c1','미납 세액 (원)',1000000],['c2','적용 연 환산 가산 이율 (%)',8],['c3','지연 일수',30]]);note='법정 가산세 확정 계산이 아닙니다. 가산세 종류·시점별 법정률·기본가산세를 확인한 뒤 적용해야 합니다.'}
+ else if(t==='book'){f=calcFields([['c1','기존 월 기장료 (원)',150000],['c2','변경 월 기장료 (원)',100000],['c3','계약 개월 수',12]]);note='신고 대행료·조정료·부가세·서비스 범위는 별도입니다.'}
+ else if(t==='fire'){f=calcFields([['c1','기존 월 보험료 (원)',80000],['c2','비교 월 보험료 (원)',65000],['c3','비교 개월 수',12]]);note='보장 범위·면책사항·가입조건이 동일하다는 보장이 없으므로 절감액만으로 보험상품을 비교하면 안 됩니다.'}
+ else if(t==='card'){f=calcFields([['c1','월 카드 사용액 (원)',2000000],['c2','예상 혜택률 (%)',1],['c3','비교 개월 수',12]]);note='카드별 연회비·실적조건·업종 제외·혜택 한도가 반영되지 않았습니다.'}
+ else if(t==='tax'){f=calcFields([['c1','연매출 (원, VAT 포함)',200000000],['c2','연간 지출 (원, VAT 포함)',120000000],['c3','연 인건비 (원)',36000000]]);note='연매출−경비−인건비의 기초 손익만 계산합니다. 실제 절세액이나 신고 세액 산정에는 매입세액·세무조정·과세유형 등 추가 검토가 필요합니다.'}
+ else if(t==='schedule'){return calcStatic('세무 일정·체크리스트','부가가치세·종합소득세·원천세·법인세의 신고기한은 납세자 유형·신고 방식·해당 연도 공휴일에 따라 달라집니다. 신고 대상과 해당 연도의 공식 국세청 일정을 먼저 확인한 뒤 매장별 일정표에 기록하세요. <a href="https://www.nts.go.kr" target="_blank" rel="noopener noreferrer">국세청 공식 안내 ↗</a>')}
+ return '<h3>'+title+'</h3>'+f+'<div class="calc-output" aria-live="polite"><span id="calc-result-label">시뮬레이션 결과</span><strong id="calc-result"></strong><span id="calc-detail"></span></div><div class="calc-note">'+note+'</div><p class="small">계산 시연 전용 · 실제 고객의 확정 혜택·평균 실적·공식 지원 한도를 의미하지 않습니다.</p><button class="pill ghost" onclick="openPage(\'consult\')">상담·관심 상품 보기</button>';
+}
+function salesRecalc(){
+ let a=calcNum('c1'),b=calcNum('c2'),c=calcNum('c3'),d=calcNum('c4'),num=0,label='비교 결과',detail='';
+ const t=selectedSalesTool;
+ if(['table','internet','book','fire'].includes(t)){let count=t==='table'?c:1,months=t==='table'?d:c;num=(a-b)*count*months;label='기간 내 요금 차이 (절감 가능 예시)';detail='기존 '+calcWon(a*count*months)+' / 변경 '+calcWon(b*count*months)}
+ else if(t==='delivery'){num=a*(b-c)/100*d;label='기간 내 수수료 차이 (예시)';detail='기존율 '+b+'% / 변경율 '+c+'%'}
+ else if(t==='labor'){num=a*b*c;label='기본 급여 총액';detail='사업주 부담 보험료·퇴직금 등 제외'}
+ else if(t==='fund'){let rate=b/1200,n=Math.floor(c);num=n?(rate?a*rate*Math.pow(1+rate,n)/(Math.pow(1+rate,n)-1):a/n):0;label='월 원리금균등 상환액 (예시)';detail='총 상환액 '+calcWon(num*n)+' / 이자 합계 '+calcWon(num*n-a)}
+ else if(t==='support'){num=Math.min(a*b/100,c);label='가정 지원비율 적용액';detail='가정 자부담액 '+calcWon(a-num)}
+ else if(t==='vat'){num=(a-b)*c/100;label='기초 VAT 차액 (예시)';detail='개별 세액공제·면세 조정 전'}
+ else if(t==='income'){let ranges=[[14000000,.06],[50000000,.15],[88000000,.24],[150000000,.35],[300000000,.38],[500000000,.40],[1000000000,.42],[Infinity,.45]],last=0,total=0;for(const [max,rate] of ranges){let slice=Math.max(0,Math.min(a,max)-last);total+=slice*rate;last=max;if(a<=max)break}num=total;label='기본 누진세율 적용 산출세액';detail='지방소득세·감면·세액공제 전'}
+ else if(t==='yellow'){num=Math.min(a*12,c)*b/100;label='소득공제 세효과 예시';detail='가정 한계세율 '+b+'% 적용'}
+ else if(t==='penalty'){num=a*b/100*c/365;label='단순 지연이자 비교액';detail='실제 법정 가산세 아님'}
+ else if(t==='card'){num=a*b/100*c;label='기간 내 가정 혜택액';detail='카드사 약관·제외조건 미반영'}
+ else if(t==='tax'){num=a-b-c;label='기초 연간 손익 차액';detail='확정 과세소득 또는 절세액이 아님'}
+ document.getElementById('calc-result').textContent=calcWon(num);
+ document.getElementById('calc-result-label').textContent=label;
+ document.getElementById('calc-detail').textContent=detail;
+}
+
 /* ---------- render ---------- */
 function render(){
-  const fn={home:renderHome,services:renderServices,road:renderRoad,benefits:renderBenefitsPage,detail:renderDetail,consult:renderConsultPage}[state.page]||renderHome;
-  app.innerHTML=fn();
+  const fn={home:renderHome,services:renderServices,road:renderRoad,benefits:renderBenefitsPage,detail:renderDetail,consult:renderConsultPage,calculator:salesCalculatorPage}[state.page]||renderHome;
+  app.innerHTML=fn(); if(state.page==='calculator'&&selectedSalesTool!=='schedule')salesRecalc();
   document.querySelectorAll('[data-page]').forEach(b=>{const on=b.dataset.page===state.page||(state.page==='detail'&&b.dataset.page==='benefits');b.classList.toggle('active',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   const cc=document.getElementById('cartcount');if(cc){cc.textContent=state.cart.length;cc.hidden=!state.cart.length}
   store.set('pp-sb-cart',state.cart);store.set('pp-sb-selected',state.selected);setHdr();
