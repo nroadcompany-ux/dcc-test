@@ -8,7 +8,7 @@
 :root{--ink:#191f28;--muted:#6b7684;--line:#e5e8eb;--blue:#325feb;--soft:#f5f7fb;--red:#e0364a}
 *{box-sizing:border-box}
 body{margin:0;background:var(--soft);color:var(--ink);font-family:Pretendard,'Noto Sans KR',system-ui,sans-serif}
-.wrap{max-width:920px;margin:0 auto;padding:56px 24px}
+.wrap{max-width:1180px;margin:0 auto;padding:56px 24px}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:30px;flex-wrap:wrap}
 h1{margin:0 0 10px;font-size:34px;letter-spacing:-1.2px}
 .sub{margin:0;color:var(--muted)}
@@ -51,6 +51,16 @@ a.item:hover{border-color:#9eb4ff;box-shadow:0 12px 30px rgba(25,31,40,.08);tran
 .badge.plan{background:#efe8ff;color:#6a3fd1}
 .badge.open{background:#eaf0ff;color:var(--blue)}
 .meta .dt{font-size:12px;color:#8b95a1}
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:32px;align-items:start}
+.menu{position:sticky;top:20px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px}
+.menu h5{margin:6px 10px 10px;font-size:12px;color:#8b95a1;letter-spacing:.4px}
+.mi{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:transparent;border-radius:10px;padding:9px 10px;color:#333d4b;font-size:14px;font-weight:650}
+.mi:hover{background:#f2f4f8}
+.mi.on{background:#eaf0ff;color:var(--blue)}
+.mi .n{font-size:11px;color:#8b95a1;font-weight:700}
+.mi.d1{padding-left:24px;font-weight:600;font-size:13.5px}
+.mi.d2{padding-left:38px;font-weight:500;font-size:13px}
+.mi.d3{padding-left:52px;font-weight:500;font-size:13px}
 .empty{color:#8b95a1;font-size:13px;padding:6px 2px}
 .note{margin-top:26px;color:#8b95a1;font-size:13px}
 .error{background:#fff0f1;border:1px solid #ffc9cf;color:#a3202f;padding:12px 16px;border-radius:12px;margin-bottom:18px;font-size:14px}
@@ -71,6 +81,7 @@ th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertic
 .hist ul{padding:0;margin:0}
 .hist small{color:var(--muted)}
 .hist .ch{margin:4px 0 0 0;color:#4e5968}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.menu{position:static}}
 @media(max-width:600px){.wrap{padding:36px 16px}.item{padding:16px}.info strong{font-size:16px}.sub-group{margin-left:6px;padding-left:12px}.row{flex-direction:column}.ictl{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
@@ -83,10 +94,15 @@ th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertic
     </div>
     <div class="bar" id="bar"></div>
   </div>
-  <div id="msg"></div>
-  <div class="filters" id="filters"></div>
-  <div id="app">불러오는 중...</div>
-  <p class="note" id="note"></p>
+  <div class="layout">
+    <nav class="menu" id="menu" aria-label="카테고리"></nav>
+    <div>
+      <div id="msg"></div>
+      <div class="filters" id="filters"></div>
+      <div id="app">불러오는 중...</div>
+      <p class="note" id="note"></p>
+    </div>
+  </div>
 </main>
 <dialog id="dlg"></dialog>
 
@@ -107,7 +123,7 @@ function h(tag, attrs, ...kids) {
   return e;
 }
 
-const state = { doc: null, user: null, filter: 'all' };
+const state = { doc: null, user: null, filter: 'all', cat: null };
 const STAGE = { official: '공식', test: '테스트', plan: '기획' };
 const todayStr = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const targetOf = (it) => it.target || (/^https?:\/\//i.test(it.url || '') ? 'new' : 'same');
@@ -172,8 +188,15 @@ function render() {
   const hasVisible = (g) => items.some((i) => i.groupId === g.id && itemOk(i)) || kids(g.id).some(hasVisible);
   state.itemOk = itemOk; state.hasVisible = hasVisible;
 
-  const roots = kids(null).filter((g) => f === 'all' || hasVisible(g));
-  roots.forEach((g) => app.append(renderGroup(g, 0, [], kids, items, groups, canEdit)));
+  if (state.cat && !groups.some((g) => g.id === state.cat)) state.cat = null;
+  renderMenu(groups, items, kids);
+  let roots, basePath = [];
+  if (state.cat) {
+    const cg = groups.find((g) => g.id === state.cat);
+    roots = [cg];
+    let cur = cg; while (cur.parentId) { cur = groups.find((g) => g.id === cur.parentId); if (!cur) break; basePath.unshift(cur.name); }
+  } else roots = kids(null).filter((g) => f === 'all' || hasVisible(g));
+  roots.forEach((g) => app.append(renderGroup(g, 0, basePath, kids, items, groups, canEdit)));
   if (!roots.length) app.append(h('div', { class: 'empty' }, '아직 등록된 그룹이 없습니다.'));
 
   if (canEdit) app.append(h('button', { class: 'btn primary', onclick: () => groupForm(null, null) }, '+ 새 그룹 만들기'));
@@ -181,6 +204,18 @@ function render() {
   $('#note').textContent = canEdit
     ? `편집 모드 · 마지막 수정 ${fmt(d.updatedAt)} (${d.updatedBy})`
     : `읽기 전용 · 수정하려면 로그인하세요. 마지막 수정 ${fmt(d.updatedAt)}`;
+}
+
+function renderMenu(groups, items, kids) {
+  const m = $('#menu'); m.innerHTML = '';
+  m.append(h('h5', {}, '카테고리'));
+  const count = (g) => items.filter((i) => i.groupId === g.id).length + kids(g.id).reduce((a, c) => a + count(c), 0);
+  m.append(h('button', { class: 'mi' + (state.cat ? '' : ' on'), onclick: () => { state.cat = null; render(); } }, h('span', {}, '전체 보기'), h('span', { class: 'n' }, String(items.length))));
+  const walk = (pid, depth) => kids(pid).forEach((g) => {
+    m.append(h('button', { class: 'mi d' + Math.min(depth, 3) + (state.cat === g.id ? ' on' : ''), onclick: () => { state.cat = g.id; render(); } }, h('span', {}, g.name), h('span', { class: 'n' }, String(count(g)))));
+    walk(g.id, depth + 1);
+  });
+  walk(null, 0);
 }
 
 function renderFilters(items) {
