@@ -5,22 +5,431 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DCC Test Dashboard</title>
 <style>
-:root{--ink:#191f28;--muted:#6b7684;--line:#e5e8eb;--blue:#325feb;--soft:#f5f7fb}*{box-sizing:border-box}body{margin:0;background:var(--soft);color:var(--ink);font-family:Pretendard,'Noto Sans KR',system-ui,sans-serif}.wrap{max-width:920px;margin:0 auto;padding:64px 24px}header{margin-bottom:32px}h1{margin:0 0 10px;font-size:34px;letter-spacing:-1.2px}.sub{margin:0;color:var(--muted)}
-.group{margin-bottom:34px}.ghead{display:flex;align-items:center;gap:10px;margin:0 0 12px}.ghead h2{margin:0;font-size:22px;letter-spacing:-.6px}.ghead .tag{font-size:12px;font-weight:800;color:#fff;background:var(--blue);padding:4px 9px;border-radius:99px}.ghead .desc{color:var(--muted);font-size:13px}
-.sub-group{margin:18px 0 0 22px;padding-left:20px;border-left:3px solid #cfd9fb}.sub-group .ghead h3{margin:0;font-size:18px;letter-spacing:-.4px}.sub-group .ghead .tag{background:#7c93e8}
-.list{display:flex;flex-direction:column;gap:12px}.item{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 24px;border:1px solid var(--line);border-radius:18px;background:#fff;color:inherit;text-decoration:none;transition:.18s}.item:hover{border-color:#9eb4ff;box-shadow:0 12px 30px rgba(25,31,40,.08);transform:translateY(-1px)}.index{width:42px;height:42px;border-radius:12px;background:#eaf0ff;color:var(--blue);display:grid;place-items:center;font-weight:800;flex:0 0 auto}.info{flex:1}.info strong{display:block;font-size:18px;margin-bottom:6px}.info span{color:var(--muted);font-size:14px}.arrow{color:var(--blue);font-weight:800;font-size:20px}.note{margin-top:26px;color:#8b95a1;font-size:13px}@media(max-width:600px){.wrap{padding:40px 18px}.item{padding:16px}.info strong{font-size:16px}.sub-group{margin-left:6px;padding-left:12px}}
+:root{--ink:#191f28;--muted:#6b7684;--line:#e5e8eb;--blue:#325feb;--soft:#f5f7fb;--red:#e0364a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--soft);color:var(--ink);font-family:Pretendard,'Noto Sans KR',system-ui,sans-serif}
+.wrap{max-width:920px;margin:0 auto;padding:56px 24px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:30px;flex-wrap:wrap}
+h1{margin:0 0 10px;font-size:34px;letter-spacing:-1.2px}
+.sub{margin:0;color:var(--muted)}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.who{font-size:13px;color:var(--muted);margin-right:4px}
+.who b{color:var(--ink)}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 13px;border-radius:10px;font-size:13px;font-weight:650}
+.btn:hover{border-color:#9eb4ff}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.danger{color:var(--red)}
+.btn.sm{padding:5px 9px;font-size:12px;border-radius:8px}
+.group{margin-bottom:34px}
+.ghead{display:flex;align-items:center;gap:10px;margin:0 0 12px;flex-wrap:wrap}
+.ghead h2,.ghead h3{margin:0;letter-spacing:-.5px}
+.ghead h2{font-size:22px}.ghead h3{font-size:18px}
+.tag{font-size:12px;font-weight:800;color:#fff;background:var(--blue);padding:4px 9px;border-radius:99px}
+.depth1>.ghead .tag{background:#7c93e8}.depth2>.ghead .tag{background:#a9b8ee}
+.desc{color:var(--muted);font-size:13px}
+.gctl{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.sub-group{margin:18px 0 0 22px;padding-left:20px;border-left:3px solid #cfd9fb}
+.list{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:8px;align-items:stretch}
+.item{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 24px;border:1px solid var(--line);border-radius:18px;background:#fff;color:inherit;text-decoration:none;transition:.18s}
+a.item:hover{border-color:#9eb4ff;box-shadow:0 12px 30px rgba(25,31,40,.08);transform:translateY(-1px)}
+.index{min-width:42px;height:42px;padding:0 6px;border-radius:12px;background:#eaf0ff;color:var(--blue);display:grid;place-items:center;font-weight:800;flex:0 0 auto;font-size:14px}
+.info{flex:1;min-width:0}
+.info strong{display:block;font-size:18px;margin-bottom:6px;word-break:break-word}
+.info span{color:var(--muted);font-size:14px;word-break:break-word}
+.arrow{color:var(--blue);font-weight:800;font-size:20px}
+.ictl{display:grid;grid-template-columns:1fr 1fr;gap:5px;align-content:center}
+.empty{color:#8b95a1;font-size:13px;padding:6px 2px}
+.note{margin-top:26px;color:#8b95a1;font-size:13px}
+.error{background:#fff0f1;border:1px solid #ffc9cf;color:#a3202f;padding:12px 16px;border-radius:12px;margin-bottom:18px;font-size:14px}
+dialog{border:0;border-radius:18px;padding:0;width:min(520px,92vw);box-shadow:0 24px 70px rgba(25,31,40,.28);color:var(--ink)}
+dialog::backdrop{background:rgba(25,31,40,.45)}
+.dbox{padding:24px}
+.dbox h4{margin:0 0 16px;font-size:19px;letter-spacing:-.4px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:13px;font-size:13px;font-weight:700;color:#4e5968}
+.field input,.field select,.field textarea{border:1px solid #d7dce4;border-radius:11px;padding:11px 12px;font:inherit;font-weight:400;color:var(--ink);background:#fff;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid #bfcdfb;border-color:var(--blue)}
+.hint{font-size:12px;color:var(--muted);font-weight:400}
+.dfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.derr{color:var(--red);font-size:13px;min-height:18px;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.hist{max-height:55vh;overflow:auto}
+.hist li{margin-bottom:12px;font-size:13px;list-style:none}
+.hist ul{padding:0;margin:0}
+.hist small{color:var(--muted)}
+.hist .ch{margin:4px 0 0 0;color:#4e5968}
+@media(max-width:600px){.wrap{padding:36px 16px}.item{padding:16px}.info strong{font-size:16px}.sub-group{margin-left:6px;padding-left:12px}.row{flex-direction:column}.ictl{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
-<body><main class="wrap"><header><h1>DCC Test Dashboard</h1><p class="sub">NROAD 소속별 구현물 목록 · → 이 사이트 내부 페이지 / ↗ 외부 배포 링크</p></header>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div>
+      <h1>DCC Test Dashboard</h1>
+      <p class="sub">NROAD 소속별 구현물 목록 · → 이 사이트 내부 페이지 / ↗ 외부 배포 링크</p>
+    </div>
+    <div class="bar" id="bar"></div>
+  </div>
+  <div id="msg"></div>
+  <div id="app">불러오는 중...</div>
+  <p class="note" id="note"></p>
+</main>
+<dialog id="dlg"></dialog>
 
-<section class="group"><div class="ghead"><span class="tag">NROAD</span><h2>엔로드</h2><span class="desc">전체 관제</span></div>
-<div class="list"><a class="item" href="https://nroad-hub.vercel.app/" target="_blank" rel="noopener"><span class="index">N-1</span><span class="info"><strong>엔로드 관제센터 (NROAD 허브)</strong><span>각 제품 허브의 기록을 한곳에서 확인</span></span><span class="arrow">↗</span></a></div>
+<script>
+const $ = (s, e = document) => e.querySelector(s);
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()) {
+    if (c == null || c === false) continue;
+    e.append(c.nodeType ? c : document.createTextNode(c));
+  }
+  return e;
+}
 
-<div class="sub-group"><div class="ghead"><span class="tag">소속</span><h3>PayPlay 페이플레이</h3><span class="desc">NROAD &gt; PayPlay</span></div>
-<div class="list"><a class="item" href="https://payplay-oc-hub.vercel.app" target="_blank" rel="noopener"><span class="index">P-1</span><span class="info"><strong>PayPlay OC · 업데이트 기록</strong><span>OC 버전 모음, 변경 기록, 연결된 원본</span></span><span class="arrow">↗</span></a><a class="item" href="https://payplay-osp-hub.vercel.app" target="_blank" rel="noopener"><span class="index">P-2</span><span class="info"><strong>PayPlay OSP · 제작 허브</strong><span>홈페이지 제작 기록과 사이트 모음</span></span><span class="arrow">↗</span></a><a class="item" href="./payplay.html"><span class="index">P-3</span><span class="info"><strong>PayPlay 혜택·매장 솔루션</strong><span>정부지원사업 탐색 및 매장 운영 솔루션 테스트 화면</span></span><span class="arrow">→</span></a></div></div>
+const state = { doc: null, user: null };
 
-<div class="sub-group"><div class="ghead"><span class="tag">소속</span><h3>RETURN 리턴</h3><span class="desc">NROAD &gt; RETURN</span></div>
-<div class="list"><a class="item" href="https://return-hub-eight.vercel.app" target="_blank" rel="noopener"><span class="index">R-1</span><span class="info"><strong>RETURN · QA & 업데이트 허브</strong><span>최신 버전, QA 현황, 연결 자료, 변경 기록</span></span><span class="arrow">↗</span></a></div></div>
-</section>
+async function api(path, opt = {}) {
+  const r = await fetch(path, {
+    method: opt.method || 'GET',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'dcc' },
+    body: opt.body ? JSON.stringify(opt.body) : undefined,
+    credentials: 'same-origin',
+  });
+  let j = {};
+  try { j = await r.json(); } catch (e) {}
+  if (!r.ok) { const err = new Error(j.error || ('오류 ' + r.status)); err.status = r.status; err.body = j; throw err; }
+  return j;
+}
 
-<p class="note">새 구현물은 해당 소속(NROAD &gt; 제품) 아래에 추가합니다. 소속이 새로 생기면 그룹을 새로 만듭니다.</p></main></body></html>
+function showMsg(text) {
+  const m = $('#msg'); m.innerHTML = '';
+  if (text) m.append(h('div', { class: 'error' }, text));
+}
+
+async function load() {
+  try {
+    state.doc = await api('/api/data');
+    showMsg('');
+  } catch (e) { showMsg('목록을 불러오지 못했습니다: ' + e.message); }
+  try { state.user = (await api('/api/auth?action=me')).user; } catch (e) { state.user = null; }
+  render();
+}
+
+async function save(mutator) {
+  const data = JSON.parse(JSON.stringify(state.doc.data));
+  mutator(data);
+  try {
+    state.doc = await api('/api/data', { method: 'PUT', body: { baseVersion: state.doc.version, data } });
+    showMsg('');
+    render();
+  } catch (e) {
+    if (e.status === 409) { state.doc = e.body.current; showMsg(e.message); render(); }
+    else if (e.status === 401) { state.user = null; showMsg('로그인이 만료되었습니다. 다시 로그인해 주세요.'); render(); }
+    else { showMsg(e.message); }
+    throw e;
+  }
+}
+
+function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3); }
+const isSafeUrl = (u) => /^https?:\/\//i.test(u) || /^(\.\/|\/)/.test(u);
+const isExt = (u) => /^https?:\/\//i.test(u);
+
+/* ---------- 렌더링 ---------- */
+function render() {
+  renderBar();
+  const app = $('#app'); app.innerHTML = '';
+  if (!state.doc) return;
+  const { groups, items } = state.doc.data;
+  const kids = (pid) => groups.filter((g) => (g.parentId || null) === pid);
+  const canEdit = !!state.user;
+
+  const roots = kids(null);
+  roots.forEach((g) => app.append(renderGroup(g, 0, [], kids, items, groups, canEdit)));
+  if (!roots.length) app.append(h('div', { class: 'empty' }, '아직 등록된 그룹이 없습니다.'));
+
+  if (canEdit) app.append(h('button', { class: 'btn primary', onclick: () => groupForm(null, null) }, '+ 최상위 그룹 추가'));
+  const d = state.doc;
+  $('#note').textContent = canEdit
+    ? `편집 모드 · 마지막 수정 ${fmt(d.updatedAt)} (${d.updatedBy})`
+    : `읽기 전용 · 수정하려면 로그인하세요. 마지막 수정 ${fmt(d.updatedAt)}`;
+}
+
+function fmt(iso) {
+  try { return new Date(iso).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }); } catch (e) { return iso; }
+}
+
+function renderGroup(g, depth, path, kids, items, groups, canEdit) {
+  const sibs = kids(g.parentId || null);
+  const si = sibs.findIndex((x) => x.id === g.id);
+  const myPath = path.concat(g.name);
+  const sec = h('section', { class: depth === 0 ? 'group depth0' : `sub-group depth${Math.min(depth, 2)}` });
+  const head = h('div', { class: 'ghead' },
+    g.tag && h('span', { class: 'tag' }, g.tag),
+    h(depth === 0 ? 'h2' : 'h3', {}, g.name),
+    h('span', { class: 'desc' }, g.desc || (depth ? path.join(' > ') + ' > ' + g.name : '')));
+  if (canEdit) {
+    head.append(h('div', { class: 'gctl' },
+      h('button', { class: 'btn sm', onclick: () => itemForm(null, g.id) }, '+ 항목'),
+      h('button', { class: 'btn sm', onclick: () => groupForm(null, g.id) }, '+ 하위 그룹'),
+      h('button', { class: 'btn sm', disabled: si <= 0, onclick: () => moveGroup(g.id, -1) }, '↑'),
+      h('button', { class: 'btn sm', disabled: si >= sibs.length - 1, onclick: () => moveGroup(g.id, 1) }, '↓'),
+      h('button', { class: 'btn sm', onclick: () => groupForm(g, g.parentId) }, '수정'),
+      h('button', { class: 'btn sm danger', onclick: () => delGroup(g) }, '삭제')));
+  }
+  sec.append(head);
+
+  const mine = items.filter((i) => i.groupId === g.id);
+  const list = h('div', { class: 'list' });
+  mine.forEach((it, idx) => {
+    const ok = it.url && isSafeUrl(it.url);
+    const ext = ok && isExt(it.url);
+    const body = [
+      h('span', { class: 'index' }, it.code || '·'),
+      h('span', { class: 'info' }, h('strong', {}, it.title), it.desc && h('span', {}, it.desc)),
+      ok && h('span', { class: 'arrow' }, ext ? '↗' : '→'),
+    ];
+    const card = ok
+      ? h('a', { class: 'item', href: it.url, target: ext ? '_blank' : null, rel: ext ? 'noopener noreferrer' : null }, body)
+      : h('div', { class: 'item' }, body);
+    const row = h('div', { class: 'row' }, card);
+    if (canEdit) {
+      row.append(h('div', { class: 'ictl' },
+        h('button', { class: 'btn sm', disabled: idx === 0, onclick: () => moveItem(it.id, -1) }, '↑'),
+        h('button', { class: 'btn sm', disabled: idx === mine.length - 1, onclick: () => moveItem(it.id, 1) }, '↓'),
+        h('button', { class: 'btn sm', onclick: () => itemForm(it, g.id) }, '수정'),
+        h('button', { class: 'btn sm danger', onclick: () => delItem(it) }, '삭제')));
+    }
+    list.append(row);
+  });
+  if (!mine.length && canEdit) list.append(h('div', { class: 'empty' }, '항목이 없습니다. "+ 항목"으로 추가하세요.'));
+  if (mine.length || canEdit) sec.append(list);
+
+  kids(g.id).forEach((c) => sec.append(renderGroup(c, depth + 1, myPath, kids, items, groups, canEdit)));
+  return sec;
+}
+
+function renderBar() {
+  const bar = $('#bar'); bar.innerHTML = '';
+  if (!state.user) {
+    bar.append(h('button', { class: 'btn primary', onclick: loginForm }, '관리자 로그인'));
+    return;
+  }
+  const u = state.user;
+  bar.append(h('span', { class: 'who' }, h('b', {}, u.name), ` (${u.username} · ${u.role === 'admin' ? '관리자' : '편집자'})`));
+  bar.append(h('button', { class: 'btn', onclick: historyView }, '변경 기록'));
+  if (u.role === 'admin') bar.append(h('button', { class: 'btn', onclick: usersView }, '계정 관리'));
+  bar.append(h('button', { class: 'btn', onclick: passwordForm }, '비밀번호 변경'));
+  bar.append(h('button', { class: 'btn', onclick: logout }, '로그아웃'));
+}
+
+/* ---------- 데이터 조작 ---------- */
+function swap(arr, a, b) { const t = arr[a]; arr[a] = arr[b]; arr[b] = t; }
+
+function moveGroup(id, dir) {
+  save((d) => {
+    const g = d.groups.find((x) => x.id === id);
+    const sibs = d.groups.filter((x) => (x.parentId || null) === (g.parentId || null));
+    const i = sibs.findIndex((x) => x.id === id), j = i + dir;
+    if (j < 0 || j >= sibs.length) return;
+    swap(d.groups, d.groups.indexOf(sibs[i]), d.groups.indexOf(sibs[j]));
+  }).catch(() => {});
+}
+function moveItem(id, dir) {
+  save((d) => {
+    const it = d.items.find((x) => x.id === id);
+    const sibs = d.items.filter((x) => x.groupId === it.groupId);
+    const i = sibs.findIndex((x) => x.id === id), j = i + dir;
+    if (j < 0 || j >= sibs.length) return;
+    swap(d.items, d.items.indexOf(sibs[i]), d.items.indexOf(sibs[j]));
+  }).catch(() => {});
+}
+function delItem(it) {
+  if (!confirm(`"${it.title}" 항목을 삭제할까요?`)) return;
+  save((d) => { d.items = d.items.filter((x) => x.id !== it.id); }).catch(() => {});
+}
+function delGroup(g) {
+  const all = state.doc.data;
+  const ids = new Set([g.id]);
+  let grew = true;
+  while (grew) { grew = false; for (const x of all.groups) if (x.parentId && ids.has(x.parentId) && !ids.has(x.id)) { ids.add(x.id); grew = true; } }
+  const nItems = all.items.filter((i) => ids.has(i.groupId)).length;
+  const msg = `"${g.name}" 그룹을 삭제할까요?` + (ids.size > 1 || nItems ? `\n하위 그룹 ${ids.size - 1}개와 항목 ${nItems}개도 함께 삭제됩니다.` : '');
+  if (!confirm(msg)) return;
+  save((d) => { d.groups = d.groups.filter((x) => !ids.has(x.id)); d.items = d.items.filter((x) => !ids.has(x.groupId)); }).catch(() => {});
+}
+
+function groupOptions(excludeId) {
+  const { groups } = state.doc.data;
+  const out = [];
+  const walk = (pid, depth, blocked) => {
+    groups.filter((g) => (g.parentId || null) === pid).forEach((g) => {
+      const isBlocked = blocked || g.id === excludeId;
+      if (!isBlocked) out.push({ value: g.id, label: '　'.repeat(depth) + g.name });
+      walk(g.id, depth + 1, isBlocked);
+    });
+  };
+  walk(null, 0, false);
+  return out;
+}
+
+/* ---------- 다이얼로그 ---------- */
+function openDialog(title, fields, submitLabel, onSubmit, extra) {
+  const dlg = $('#dlg'); dlg.innerHTML = '';
+  const err = h('div', { class: 'derr' });
+  const form = h('form', { method: 'dialog' });
+  const inputs = {};
+  fields.forEach((f) => {
+    let inp;
+    if (f.type === 'select') {
+      inp = h('select', { name: f.name }, f.options.map((o) => h('option', { value: o.value, selected: o.value === f.value }, o.label)));
+    } else {
+      inp = h('input', { name: f.name, type: f.type || 'text', value: f.value ?? '', required: !!f.required, maxlength: f.max || 200, placeholder: f.placeholder || '', autocomplete: f.type === 'password' ? 'new-password' : 'off' });
+    }
+    inputs[f.name] = inp;
+    form.append(h('label', { class: 'field' }, f.label, inp, f.hint && h('span', { class: 'hint' }, f.hint)));
+  });
+  form.append(err);
+  if (extra) form.append(extra);
+  form.append(h('div', { class: 'dfoot' },
+    h('button', { class: 'btn', type: 'button', onclick: () => dlg.close() }, '취소'),
+    h('button', { class: 'btn primary', type: 'submit' }, submitLabel)));
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const vals = {}; for (const k in inputs) vals[k] = inputs[k].value;
+    err.textContent = '';
+    try { await onSubmit(vals); dlg.close(); } catch (e) { err.textContent = e.message; }
+  });
+  dlg.append(h('div', { class: 'dbox' }, h('h4', {}, title), form));
+  dlg.showModal();
+  const first = form.querySelector('input,select'); if (first) first.focus();
+}
+
+function infoDialog(title, content) {
+  const dlg = $('#dlg'); dlg.innerHTML = '';
+  dlg.append(h('div', { class: 'dbox' }, h('h4', {}, title), content,
+    h('div', { class: 'dfoot' }, h('button', { class: 'btn', onclick: () => dlg.close() }, '닫기'))));
+  dlg.showModal();
+}
+
+function loginForm() {
+  openDialog('관리자 로그인', [
+    { name: 'username', label: '아이디', required: true, max: 32 },
+    { name: 'password', label: '비밀번호', type: 'password', required: true },
+  ], '로그인', async (v) => {
+    const r = await api('/api/auth?action=login', { method: 'POST', body: v });
+    state.user = r.user; render();
+  });
+}
+async function logout() {
+  try { await api('/api/auth?action=logout', { method: 'POST' }); } catch (e) {}
+  state.user = null; render();
+}
+
+function groupForm(g, parentId) {
+  const isEdit = !!g;
+  const opts = [{ value: '', label: '(최상위)' }].concat(groupOptions(g && g.id));
+  openDialog(isEdit ? '그룹 수정' : '그룹 추가', [
+    { name: 'name', label: '그룹 이름', required: true, value: g ? g.name : '', max: 60 },
+    { name: 'tag', label: '배지 문구', value: g ? g.tag : '소속', max: 12, hint: '예: NROAD, 소속' },
+    { name: 'desc', label: '설명 (선택)', value: g ? g.desc : '', max: 80 },
+    { name: 'parentId', label: '상위 그룹', type: 'select', options: opts, value: parentId || '' },
+  ], isEdit ? '저장' : '추가', (v) => save((d) => {
+    if (isEdit) {
+      const t = d.groups.find((x) => x.id === g.id);
+      Object.assign(t, { name: v.name, tag: v.tag, desc: v.desc, parentId: v.parentId || null });
+    } else {
+      d.groups.push({ id: uid('g'), name: v.name, tag: v.tag, desc: v.desc, parentId: v.parentId || null });
+    }
+  }));
+}
+
+function itemForm(it, groupId) {
+  const isEdit = !!it;
+  openDialog(isEdit ? '항목 수정' : '항목 추가', [
+    { name: 'groupId', label: '소속 그룹', type: 'select', options: groupOptions(null), value: groupId },
+    { name: 'code', label: '번호 (선택)', value: it ? it.code : '', max: 12, hint: '예: P-4' },
+    { name: 'title', label: '제목', required: true, value: it ? it.title : '', max: 80 },
+    { name: 'desc', label: '설명 (선택)', value: it ? it.desc : '', max: 160 },
+    { name: 'url', label: '링크', value: it ? it.url : '', max: 500, placeholder: 'https://...', hint: 'http(s):// 주소 또는 ./payplay.html 같은 내부 경로' },
+  ], isEdit ? '저장' : '추가', (v) => {
+    if (v.url && !isSafeUrl(v.url)) throw new Error('링크는 http(s):// 또는 ./경로 형식이어야 합니다.');
+    return save((d) => {
+      if (isEdit) Object.assign(d.items.find((x) => x.id === it.id), { groupId: v.groupId, code: v.code, title: v.title, desc: v.desc, url: v.url });
+      else d.items.push({ id: uid('i'), groupId: v.groupId, code: v.code, title: v.title, desc: v.desc, url: v.url });
+    });
+  });
+}
+
+function passwordForm() {
+  openDialog('비밀번호 변경', [
+    { name: 'oldPassword', label: '현재 비밀번호', type: 'password', required: true },
+    { name: 'newPassword', label: '새 비밀번호', type: 'password', required: true, hint: '8자 이상' },
+  ], '변경', async (v) => { await api('/api/auth?action=password', { method: 'POST', body: v }); alert('비밀번호가 변경되었습니다.'); });
+}
+
+async function historyView() {
+  try {
+    const { history } = await api('/api/auth?action=history');
+    const ul = h('ul', {}, history.length ? history.map((x) => h('li', {},
+      h('b', {}, x.u), ' ', h('small', {}, fmt(x.t) + ' · v' + x.v),
+      h('div', { class: 'ch' }, x.changes.join(' / ')))) : h('li', {}, '기록이 없습니다.'));
+    infoDialog('변경 기록', h('div', { class: 'hist' }, ul));
+  } catch (e) { showMsg(e.message); }
+}
+
+async function usersView() {
+  try {
+    const { users } = await api('/api/auth?action=users');
+    const tbody = h('tbody', {}, users.map((u) => h('tr', {},
+      h('td', {}, u.username), h('td', {}, u.name),
+      h('td', {}, u.role === 'admin' ? '관리자' : '편집자'),
+      h('td', {},
+        h('button', { class: 'btn sm', onclick: () => userEdit(u) }, '수정'), ' ',
+        u.username !== state.user.username && h('button', { class: 'btn sm danger', onclick: () => userDel(u) }, '삭제')))));
+    const table = h('table', {}, h('thead', {}, h('tr', {}, h('th', {}, '아이디'), h('th', {}, '이름'), h('th', {}, '권한'), h('th', {}, ''))), tbody);
+    const dlg = $('#dlg'); dlg.innerHTML = '';
+    dlg.append(h('div', { class: 'dbox' }, h('h4', {}, '계정 관리'), table,
+      h('div', { class: 'dfoot' },
+        h('button', { class: 'btn primary', onclick: userAdd }, '+ 계정 추가'),
+        h('button', { class: 'btn', onclick: () => dlg.close() }, '닫기'))));
+    if (!dlg.open) dlg.showModal();
+  } catch (e) { showMsg(e.message); }
+}
+function userAdd() {
+  openDialog('계정 추가', [
+    { name: 'username', label: '아이디', required: true, max: 32, hint: '영문 소문자/숫자/._- 2~32자' },
+    { name: 'name', label: '표시 이름', max: 40 },
+    { name: 'password', label: '초기 비밀번호', type: 'password', required: true, hint: '8자 이상. 본인에게 전달 후 변경하도록 안내하세요.' },
+    { name: 'role', label: '권한', type: 'select', value: 'editor', options: [{ value: 'editor', label: '편집자 (목록 수정)' }, { value: 'admin', label: '관리자 (목록 + 계정 관리)' }] },
+  ], '추가', async (v) => { await api('/api/auth?action=users', { method: 'POST', body: v }); setTimeout(usersView, 0); });
+}
+function userEdit(u) {
+  openDialog('계정 수정: ' + u.username, [
+    { name: 'name', label: '표시 이름', value: u.name, max: 40 },
+    { name: 'role', label: '권한', type: 'select', value: u.role, options: [{ value: 'editor', label: '편집자' }, { value: 'admin', label: '관리자' }] },
+    { name: 'password', label: '새 비밀번호 (변경 시에만)', type: 'password', hint: '비워두면 유지됩니다. 변경하면 해당 계정은 다시 로그인해야 합니다.' },
+  ], '저장', async (v) => {
+    const body = { username: u.username, name: v.name, role: v.role };
+    if (v.password) body.password = v.password;
+    await api('/api/auth?action=users', { method: 'PUT', body });
+    setTimeout(usersView, 0);
+  });
+}
+async function userDel(u) {
+  if (!confirm(`계정 "${u.username}"을 삭제할까요?`)) return;
+  try { await api('/api/auth?action=users&username=' + encodeURIComponent(u.username), { method: 'DELETE' }); usersView(); } catch (e) { alert(e.message); }
+}
+
+load();
+</script>
+</body>
+</html>
