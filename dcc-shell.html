@@ -28,7 +28,7 @@ aside{overflow-y:auto;padding:19px 12px}.primary{background:#173454;color:#e8eff
 @media(max-width:620px){.shell{grid-template-columns:60px minmax(0,1fr)}.toolbar span{display:none}.toolbar strong{font-size:13px}.toolbar button:last-child{font-size:11px;padding:7px}}
 </style>
 </head><body>
-<header><strong>NROAD DCC</strong><small>프로젝트 통합 관제 · 디자인 통합 검토 v1.0 · WORKING</small><a href="https://dcc-test-six.vercel.app/" target="_blank" rel="noopener">기존 DCC 열기 ↗</a></header>
+<header><strong>NROAD DCC</strong><small>프로젝트 통합 관제 · 디자인 통합 검토 v1.0 · WORKING</small><a href="https://nroad-dcc-test.vercel.app/" target="_blank" rel="noopener">기존 DCC 열기 ↗</a></header>
 <div class="shell" id="shell"><aside class="primary"><button class="toggle" onclick="toggleBar()" aria-label="첫 번째 사이드바 접기">≡</button><div class="meta">브랜드 · 프로젝트</div><div id="mainnav"></div></aside>
 <aside class="secondary"><div class="meta" id="brandname">하위 메뉴</div><div id="subnav"></div></aside>
 <section class="workspace"><div class="toolbar"><button class="backbtn" onclick="dccBack()" title="뒤로가기" aria-label="뒤로가기">←</button><button class="backbtn" onclick="selectGroup('nroad')" title="홈" aria-label="홈">⌂</button><strong id="pagetitle">혜택·매장 솔루션</strong><span id="crumb">생존 / 영업 시연</span><button onclick="openPage('benefits')">서비스 홈</button></div><div id="bodybox" class="workspace" style="flex:1"><iframe class="frame" id="demoFrame" src="payplay-benefits.html" title="생존 혜택·매장 솔루션"></iframe></div></section></div>
@@ -53,8 +53,8 @@ current=id;let item=groups.find(x=>x.id===group)?.links.find(x=>x[0]===id);
 if(!item){group='saengzone';item=groups[1].links.find(x=>x[0]===id)||groups[1].links[0]}
 document.getElementById('pagetitle').textContent=item[1];document.getElementById('crumb').textContent=groups.find(x=>x.id===group).title+' / '+item[1];
 if(id==='overview'){document.getElementById('bodybox').innerHTML=shortcutsHome();renderQuick();renderNav();return;}
-const url={benefits:'payplay-benefits.html',catalog:'payplay-benefits.html#purpose',support:'payplay-benefits.html#benefit',road:'payplay-benefits.html#road',payplay:'https://dcc-test-six.vercel.app/payplay.html',overview:'https://dcc-test-six.vercel.app/',oc:'https://payplay-oc-v7.vercel.app/business-tasks'}[id];
-let el=document.getElementById('bodybox');if(url){el.innerHTML='<iframe class="frame" title="작업 미리보기" src="'+url+'"></iframe>'}else{el.innerHTML='<div class="blank"><h2>'+item[1]+'</h2><p>기존 운영 프로젝트를 그대로 유지합니다. 해당 메뉴의 실제 원본 경로를 DCC 담당자가 연결해야 합니다.</p><a href="https://dcc-test-six.vercel.app/" target="_blank">기존 DCC에서 확인하기</a></div>'}
+const url={benefits:'payplay-benefits.html',catalog:'payplay-benefits.html#purpose',support:'payplay-benefits.html#benefit',road:'payplay-benefits.html#road',payplay:'https://nroad-dcc-test.vercel.app/payplay.html',overview:'https://nroad-dcc-test.vercel.app/',oc:'https://payplay-oc-v7.vercel.app/business-tasks'}[id];
+let el=document.getElementById('bodybox');if(url){el.innerHTML='<iframe class="frame" title="작업 미리보기" src="'+url+'"></iframe>'}else{el.innerHTML='<div class="blank"><h2>'+item[1]+'</h2><p>기존 운영 프로젝트를 그대로 유지합니다. 해당 메뉴의 실제 원본 경로를 DCC 담당자가 연결해야 합니다.</p><a href="https://nroad-dcc-test.vercel.app/" target="_blank">기존 DCC에서 확인하기</a></div>'}
 renderNav()
 }
 window.addEventListener('DOMContentLoaded',()=>{renderNav();openPage('overview')});
