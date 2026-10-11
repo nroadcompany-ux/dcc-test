@@ -113,14 +113,15 @@ const SEED = {
     { id: 'return', parentId: 'nroad', tag: '소속', name: 'RETURN 리턴', desc: '' },
   ],
   items: [
-    { id: 'n1', groupId: 'nroad', code: 'N-1', title: '엔로드 관제센터 (NROAD 허브)', desc: '각 제품 허브의 기록을 한곳에서 확인', url: 'https://nroad-hub.vercel.app/' },
-    { id: 'p1', groupId: 'payplay', code: 'P-1', title: 'PayPlay OC · 업데이트 기록', desc: 'OC 버전 모음, 변경 기록, 연결된 원본', url: 'https://payplay-oc-hub.vercel.app' },
-    { id: 'p2', groupId: 'payplay', code: 'P-2', title: 'PayPlay OSP · 제작 허브', desc: '홈페이지 제작 기록과 사이트 모음', url: 'https://payplay-osp-hub.vercel.app' },
-    { id: 'p3', groupId: 'payplay', code: 'P-3', title: 'PayPlay 혜택·매장 솔루션', desc: '정부지원사업 탐색 및 매장 운영 솔루션 테스트 화면', url: './payplay.html' },
-    { id: 'r1', groupId: 'return', code: 'R-1', title: 'RETURN · QA & 업데이트 허브', desc: '최신 버전, QA 현황, 연결 자료, 변경 기록', url: 'https://return-hub-eight.vercel.app' },
+    { id: 'n1', groupId: 'nroad', code: 'N-1', title: '엔로드 관제센터 (NROAD 허브)', desc: '각 제품 허브의 기록을 한곳에서 확인', url: 'https://nroad-hub.vercel.app/', stage: 'official', date: '', target: 'new' },
+    { id: 'p1', groupId: 'payplay', code: 'P-1', title: 'PayPlay OC · 업데이트 기록', desc: 'OC 버전 모음, 변경 기록, 연결된 원본', url: 'https://payplay-oc-hub.vercel.app', stage: 'official', date: '', target: 'new' },
+    { id: 'p2', groupId: 'payplay', code: 'P-2', title: 'PayPlay OSP · 제작 허브', desc: '홈페이지 제작 기록과 사이트 모음', url: 'https://payplay-osp-hub.vercel.app', stage: 'official', date: '', target: 'new' },
+    { id: 'p3', groupId: 'payplay', code: 'P-3', title: 'PayPlay 혜택·매장 솔루션', desc: '정부지원사업 탐색 및 매장 운영 솔루션 테스트 화면', url: './payplay.html', stage: 'test', date: '2026-10-11', target: 'same' },
+    { id: 'r1', groupId: 'return', code: 'R-1', title: 'RETURN · QA & 업데이트 허브', desc: '최신 버전, QA 현황, 연결 자료, 변경 기록', url: 'https://return-hub-eight.vercel.app', stage: 'official', date: '', target: 'new' },
   ],
 };
 
+const STAGES = ['official', 'test', 'plan'];
 const ID_RE = /^[a-z0-9_-]{1,40}$/;
 function str(v, max) {
   return String(v == null ? '' : v).trim().slice(0, max);
@@ -164,7 +165,10 @@ function validate(data) {
     if (!title) throw new Error('항목 제목이 비어 있습니다.');
     const url = safeUrl(it.url);
     if (url === null) throw new Error('링크는 http(s):// 또는 ./경로 형식만 허용됩니다.');
-    items.push({ id: it.id, groupId: it.groupId, code: str(it.code, 12), title, desc: str(it.desc, 160), url });
+    const stage = STAGES.includes(it.stage) ? it.stage : '';
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(String(it.date || '')) ? it.date : '';
+    const target = it.target === 'same' || it.target === 'new' ? it.target : (/^https?:/i.test(url) ? 'new' : 'same');
+    items.push({ id: it.id, groupId: it.groupId, code: str(it.code, 12), title, desc: str(it.desc, 160), url, stage, date, target });
   }
   return { groups, items };
 }
