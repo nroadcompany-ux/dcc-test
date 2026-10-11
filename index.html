@@ -83,6 +83,17 @@ th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertic
 .hist .ch{margin:4px 0 0 0;color:#4e5968}
 @media(max-width:900px){.layout{grid-template-columns:1fr}.menu{position:static}}
 @media(max-width:600px){.wrap{padding:36px 16px}.item{padding:16px}.info strong{font-size:16px}.sub-group{margin-left:6px;padding-left:12px}.row{flex-direction:column}.ictl{grid-template-columns:repeat(4,1fr)}}
+
+/* DCC OC layout v1: compact two-level navigation with full-width workspace */
+.wrap{max-width:none;margin:0;padding:0}.top{margin:0;padding:12px 22px;background:#fff;border-bottom:1px solid var(--line);align-items:center;min-height:72px}.top h1{font-size:22px;margin:0 0 2px}.top .sub{font-size:12px}.layout{display:grid;grid-template-columns:152px 215px minmax(0,1fr);gap:0;align-items:stretch;min-height:calc(100vh - 72px)}
+.primary-nav{background:#142e4e;padding:13px 7px;color:white;min-width:0}.primary-nav h5{font-size:10px;letter-spacing:.09em;color:#a9bed9;margin:11px 10px 16px}.primary-nav .mi{color:#e0ebfc;font-size:12px;border-radius:8px;min-height:43px}.primary-nav .mi.on{background:#315b86;color:#fff}.primary-nav .mi .n{color:#cad8eb}
+.menu{position:sticky;top:0;align-self:start;min-height:calc(100vh - 72px);max-height:100vh;overflow:auto;background:#f7f9fc;border:0;border-right:1px solid var(--line);border-radius:0;padding:16px 9px}.menu .mi{font-size:12.5px;padding:9px 8px;min-width:0}.menu .mi.d1{padding-left:12px}.menu .mi.d2{padding-left:20px}.menu .mi.d3{padding-left:25px}
+.content-area{min-width:0;padding:21px clamp(14px,2vw,30px)}.group{margin-bottom:20px}.ghead{margin-bottom:8px}.ghead h2{font-size:17px}.ghead h3{font-size:15px}.sub-group{margin:12px 0 0 10px;padding-left:10px}.list{gap:6px}.item{padding:11px 13px;border-radius:10px;gap:12px;min-height:64px}.index{height:32px;min-width:32px;border-radius:8px;font-size:12px}.info strong{font-size:13.5px;margin-bottom:2px}.info span{font-size:12px}.meta{margin-top:4px}.meta .dt{font-size:11px}.filters{margin-bottom:15px}.chip{padding:6px 11px}.gctl{gap:4px}.ictl{grid-template-columns:1fr 1fr}.ictl .btn{padding:4px 7px}.note{margin-top:12px}
+.mode-hint{font-size:12px;font-weight:700;color:#63748b}.mode-hint.edit{color:#325feb}.btn.mode-active{background:#14345a;color:white;border-color:#14345a}
+@media(min-width:1500px){.list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.row{min-width:0}.item{min-width:0}.row .ictl{flex:0 0 auto}.info span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}}
+@media(max-width:1040px){.layout{grid-template-columns:135px 178px minmax(0,1fr)}.content-area{padding:16px}.top{padding:11px 14px}}
+@media(max-width:750px){.layout{grid-template-columns:112px minmax(0,1fr)}.menu{display:none}.primary-nav{padding:8px 4px}.primary-nav .mi{padding:10px 6px}.content-area{padding:12px}.top h1{font-size:17px}.top{gap:8px}.top .sub{display:none}}
+@media(max-width:500px){.layout{grid-template-columns:76px minmax(0,1fr)}.primary-nav .mi{font-size:11px}.primary-nav .mi .n{display:none}.content-area{padding:9px}.row{flex-direction:column}.ictl{grid-template-columns:repeat(4,minmax(0,1fr))}.item{padding:10px}.bar{gap:5px}.bar .btn{padding:6px 8px}}
 </style>
 </head>
 <body>
@@ -95,8 +106,8 @@ th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertic
     <div class="bar" id="bar"></div>
   </div>
   <div class="layout">
-    <nav class="menu" id="menu" aria-label="카테고리"></nav>
-    <div>
+    <nav class="primary-nav" id="primaryNav" aria-label="프로젝트"></nav><nav class="menu" id="menu" aria-label="하위 카테고리"></nav>
+    <div class="content-area">
       <div id="msg"></div>
       <div class="filters" id="filters"></div>
       <div id="app">불러오는 중...</div>
@@ -123,7 +134,7 @@ function h(tag, attrs, ...kids) {
   return e;
 }
 
-const state = { doc: null, user: null, filter: 'all', cat: null };
+const state = { doc: null, user: null, filter: 'all', cat: null, manage: false };
 const STAGE = { official: '공식', test: '테스트', plan: '기획' };
 const todayStr = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const targetOf = (it) => it.target || (/^https?:\/\//i.test(it.url || '') ? 'new' : 'same');
@@ -181,7 +192,7 @@ function render() {
   if (!state.doc) return;
   const { groups, items } = state.doc.data;
   const kids = (pid) => groups.filter((g) => (g.parentId || null) === pid);
-  const canEdit = !!state.user;
+  const canEdit = !!state.user && state.manage;
   renderFilters(items);
   const f = state.filter;
   const itemOk = (i) => f === 'all' || (f === 'none' ? !i.stage : i.stage === f);
@@ -189,6 +200,7 @@ function render() {
   state.itemOk = itemOk; state.hasVisible = hasVisible;
 
   if (state.cat && !groups.some((g) => g.id === state.cat)) state.cat = null;
+  renderPrimary(groups, items, kids);
   renderMenu(groups, items, kids);
   let roots, basePath = [];
   if (state.cat) {
@@ -204,6 +216,22 @@ function render() {
   $('#note').textContent = canEdit
     ? `편집 모드 · 마지막 수정 ${fmt(d.updatedAt)} (${d.updatedBy})`
     : `읽기 전용 · 수정하려면 로그인하세요. 마지막 수정 ${fmt(d.updatedAt)}`;
+}
+
+
+function renderPrimary(groups, items, kids) {
+ const n=$('#primaryNav');n.innerHTML='';
+ n.append(h('h5',{},'WORKSPACE · DCC'));
+ const roots=kids(null);
+ n.append(h('button',{class:'mi'+(state.cat===null?' on':''),onclick:()=>{state.cat=null;render()}},'전체 프로젝트'));
+ for(const g of roots){
+  const descendants=new Set([g.id]); let changed=true;
+  while(changed){changed=false;for(const x of groups){if(x.parentId&&descendants.has(x.parentId)&&!descendants.has(x.id)){descendants.add(x.id);changed=true}}}
+  const selected=state.cat&&descendants.has(state.cat);
+  const count=items.filter(i=>descendants.has(i.groupId)).length;
+  n.append(h('button',{class:'mi'+(selected?' on':''),onclick:()=>{state.cat=g.id;render()}},
+    h('span',{},g.name),h('span',{class:'n'},String(count))));
+ }
 }
 
 function renderMenu(groups, items, kids) {
@@ -289,10 +317,12 @@ function renderGroup(g, depth, path, kids, items, groups, canEdit) {
 function renderBar() {
   const bar = $('#bar'); bar.innerHTML = '';
   if (!state.user) {
-    bar.append(h('button', { class: 'btn primary', onclick: loginForm }, '관리자 로그인'));
+    bar.append(h('button', { class: 'btn primary', onclick: loginForm }, '관리 모드 · 로그인'));
     return;
   }
   const u = state.user;
+  bar.append(h('button',{class:'btn'+(state.manage?' mode-active':''),onclick:()=>{state.manage=!state.manage;render()}},state.manage?'관리 모드 종료':'관리 모드 켜기'));
+  bar.append(h('span',{class:'mode-hint'+(state.manage?' edit':'')},state.manage?'수정 가능':'조회 전용'));
   bar.append(h('span', { class: 'who' }, h('b', {}, u.name), ` (${u.username} · ${u.role === 'admin' ? '관리자' : '편집자'})`));
   bar.append(h('button', { class: 'btn', onclick: historyView }, '변경 기록'));
   if (u.role === 'admin') bar.append(h('button', { class: 'btn', onclick: usersView }, '계정 관리'));
@@ -395,12 +425,12 @@ function loginForm() {
     { name: 'password', label: '비밀번호', type: 'password', required: true },
   ], '로그인', async (v) => {
     const r = await api('/api/auth?action=login', { method: 'POST', body: v });
-    state.user = r.user; render();
+    state.user = r.user; state.manage=true; render();
   });
 }
 async function logout() {
   try { await api('/api/auth?action=logout', { method: 'POST' }); } catch (e) {}
-  state.user = null; render();
+  state.user = null; state.manage=false; render();
 }
 
 function groupForm(g, parentId) {
