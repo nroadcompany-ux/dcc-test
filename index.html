@@ -40,6 +40,17 @@ a.item:hover{border-color:#9eb4ff;box-shadow:0 12px 30px rgba(25,31,40,.08);tran
 .info span{color:var(--muted);font-size:14px;word-break:break-word}
 .arrow{color:var(--blue);font-weight:800;font-size:20px}
 .ictl{display:grid;grid-template-columns:1fr 1fr;gap:5px;align-content:center}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 26px}
+.chip{border:1px solid var(--line);background:#fff;color:#4e5968;padding:7px 14px;border-radius:99px;font-size:13px;font-weight:700}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip small{opacity:.65;margin-left:4px;font-weight:600}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.badge{font-size:11px;font-weight:800;padding:3px 8px;border-radius:99px;background:#eef0f3;color:#6b7684}
+.badge.official{background:#e3f6ec;color:#12794a}
+.badge.test{background:#fff3d9;color:#9a6200}
+.badge.plan{background:#efe8ff;color:#6a3fd1}
+.badge.open{background:#eaf0ff;color:var(--blue)}
+.meta .dt{font-size:12px;color:#8b95a1}
 .empty{color:#8b95a1;font-size:13px;padding:6px 2px}
 .note{margin-top:26px;color:#8b95a1;font-size:13px}
 .error{background:#fff0f1;border:1px solid #ffc9cf;color:#a3202f;padding:12px 16px;border-radius:12px;margin-bottom:18px;font-size:14px}
@@ -73,6 +84,7 @@ th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertic
     <div class="bar" id="bar"></div>
   </div>
   <div id="msg"></div>
+  <div class="filters" id="filters"></div>
   <div id="app">불러오는 중...</div>
   <p class="note" id="note"></p>
 </main>
@@ -95,7 +107,10 @@ function h(tag, attrs, ...kids) {
   return e;
 }
 
-const state = { doc: null, user: null };
+const state = { doc: null, user: null, filter: 'all' };
+const STAGE = { official: '공식', test: '테스트', plan: '기획' };
+const todayStr = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+const targetOf = (it) => it.target || (/^https?:\/\//i.test(it.url || '') ? 'new' : 'same');
 
 async function api(path, opt = {}) {
   const r = await fetch(path, {
@@ -151,16 +166,30 @@ function render() {
   const { groups, items } = state.doc.data;
   const kids = (pid) => groups.filter((g) => (g.parentId || null) === pid);
   const canEdit = !!state.user;
+  renderFilters(items);
+  const f = state.filter;
+  const itemOk = (i) => f === 'all' || (f === 'none' ? !i.stage : i.stage === f);
+  const hasVisible = (g) => items.some((i) => i.groupId === g.id && itemOk(i)) || kids(g.id).some(hasVisible);
+  state.itemOk = itemOk; state.hasVisible = hasVisible;
 
-  const roots = kids(null);
+  const roots = kids(null).filter((g) => f === 'all' || hasVisible(g));
   roots.forEach((g) => app.append(renderGroup(g, 0, [], kids, items, groups, canEdit)));
   if (!roots.length) app.append(h('div', { class: 'empty' }, '아직 등록된 그룹이 없습니다.'));
 
-  if (canEdit) app.append(h('button', { class: 'btn primary', onclick: () => groupForm(null, null) }, '+ 최상위 그룹 추가'));
+  if (canEdit) app.append(h('button', { class: 'btn primary', onclick: () => groupForm(null, null) }, '+ 새 그룹 만들기'));
   const d = state.doc;
   $('#note').textContent = canEdit
     ? `편집 모드 · 마지막 수정 ${fmt(d.updatedAt)} (${d.updatedBy})`
     : `읽기 전용 · 수정하려면 로그인하세요. 마지막 수정 ${fmt(d.updatedAt)}`;
+}
+
+function renderFilters(items) {
+  const box = $('#filters'); box.innerHTML = '';
+  const cnt = (k) => items.filter((i) => (k === 'all' ? true : k === 'none' ? !i.stage : i.stage === k)).length;
+  [['all', '전체'], ['official', '공식'], ['test', '테스트'], ['plan', '기획'], ['none', '미분류']].forEach(([k, label]) => {
+    if (k === 'none' && !cnt('none')) return;
+    box.append(h('button', { class: 'chip' + (state.filter === k ? ' on' : ''), onclick: () => { state.filter = k; render(); } }, label, h('small', {}, String(cnt(k)))));
+  });
 }
 
 function fmt(iso) {
@@ -187,18 +216,23 @@ function renderGroup(g, depth, path, kids, items, groups, canEdit) {
   }
   sec.append(head);
 
-  const mine = items.filter((i) => i.groupId === g.id);
+  const mine = items.filter((i) => i.groupId === g.id && state.itemOk(i));
   const list = h('div', { class: 'list' });
   mine.forEach((it, idx) => {
     const ok = it.url && isSafeUrl(it.url);
-    const ext = ok && isExt(it.url);
+    const newTab = ok && targetOf(it) === 'new';
     const body = [
       h('span', { class: 'index' }, it.code || '·'),
-      h('span', { class: 'info' }, h('strong', {}, it.title), it.desc && h('span', {}, it.desc)),
-      ok && h('span', { class: 'arrow' }, ext ? '↗' : '→'),
+      h('span', { class: 'info' },
+        h('strong', {}, it.title), it.desc && h('span', {}, it.desc),
+        h('div', { class: 'meta' },
+          h('span', { class: 'badge ' + (it.stage || '') }, STAGE[it.stage] || '미분류'),
+          it.date && h('span', { class: 'dt' }, '제작일 ' + it.date),
+          ok && h('span', { class: 'badge open' }, newTab ? '↗ 새 탭' : '→ 현재 탭'))),
+      ok && h('span', { class: 'arrow' }, newTab ? '↗' : '→'),
     ];
     const card = ok
-      ? h('a', { class: 'item', href: it.url, target: ext ? '_blank' : null, rel: ext ? 'noopener noreferrer' : null }, body)
+      ? h('a', { class: 'item', href: it.url, target: newTab ? '_blank' : '_self', rel: newTab ? 'noopener noreferrer' : null }, body)
       : h('div', { class: 'item' }, body);
     const row = h('div', { class: 'row' }, card);
     if (canEdit) {
@@ -213,7 +247,7 @@ function renderGroup(g, depth, path, kids, items, groups, canEdit) {
   if (!mine.length && canEdit) list.append(h('div', { class: 'empty' }, '항목이 없습니다. "+ 항목"으로 추가하세요.'));
   if (mine.length || canEdit) sec.append(list);
 
-  kids(g.id).forEach((c) => sec.append(renderGroup(c, depth + 1, myPath, kids, items, groups, canEdit)));
+  kids(g.id).filter((c) => state.filter === 'all' || state.hasVisible(c)).forEach((c) => sec.append(renderGroup(c, depth + 1, myPath, kids, items, groups, canEdit)));
   return sec;
 }
 
@@ -355,16 +389,24 @@ function groupForm(g, parentId) {
 function itemForm(it, groupId) {
   const isEdit = !!it;
   openDialog(isEdit ? '항목 수정' : '항목 추가', [
-    { name: 'groupId', label: '소속 그룹', type: 'select', options: groupOptions(null), value: groupId },
+    { name: 'groupId', label: '소속 그룹', type: 'select', options: groupOptions(null), value: it ? it.groupId : groupId },
+    { name: 'newGroup', label: '새 그룹 만들어서 넣기 (선택)', max: 60, hint: '이름을 적으면 위에서 고른 그룹 아래에 새 그룹을 만들고 이 항목을 그 안에 넣어요.' },
+    { name: 'stage', label: '구분', type: 'select', value: it ? it.stage || '' : 'test', options: [{ value: 'official', label: '공식' }, { value: 'test', label: '테스트' }, { value: 'plan', label: '기획' }, { value: '', label: '미분류' }] },
+    { name: 'date', label: '제작일자', type: 'date', value: it ? it.date || '' : todayStr() },
     { name: 'code', label: '번호 (선택)', value: it ? it.code : '', max: 12, hint: '예: P-4' },
     { name: 'title', label: '제목', required: true, value: it ? it.title : '', max: 80 },
     { name: 'desc', label: '설명 (선택)', value: it ? it.desc : '', max: 160 },
     { name: 'url', label: '링크', value: it ? it.url : '', max: 500, placeholder: 'https://...', hint: 'http(s):// 주소 또는 ./payplay.html 같은 내부 경로' },
+    { name: 'target', label: '링크 열기 방식', type: 'select', value: it ? targetOf(it) : 'new', options: [{ value: 'new', label: '새 탭에서 열기 ↗' }, { value: 'same', label: '현재 탭에서 열기 →' }] },
   ], isEdit ? '저장' : '추가', (v) => {
     if (v.url && !isSafeUrl(v.url)) throw new Error('링크는 http(s):// 또는 ./경로 형식이어야 합니다.');
     return save((d) => {
-      if (isEdit) Object.assign(d.items.find((x) => x.id === it.id), { groupId: v.groupId, code: v.code, title: v.title, desc: v.desc, url: v.url });
-      else d.items.push({ id: uid('i'), groupId: v.groupId, code: v.code, title: v.title, desc: v.desc, url: v.url });
+      let gid = v.groupId;
+      const nn = v.newGroup.trim();
+      if (nn) { gid = uid('g'); d.groups.push({ id: gid, name: nn, tag: '소속', desc: '', parentId: v.groupId || null }); }
+      const fields = { groupId: gid, code: v.code, title: v.title, desc: v.desc, url: v.url, stage: v.stage, date: v.date, target: v.target };
+      if (isEdit) Object.assign(d.items.find((x) => x.id === it.id), fields);
+      else d.items.push(Object.assign({ id: uid('i') }, fields));
     });
   });
 }
