@@ -104,6 +104,12 @@ th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertic
 .content-area .ictl{grid-template-columns:repeat(4,minmax(0,1fr));align-content:center}
 .content-area .arrow{font-size:17px}
 @media(max-width:700px){.content-area .ictl{grid-template-columns:repeat(2,minmax(0,1fr))}.content-area .item{padding:9px}.content-area .info strong{font-size:13px}}
+.content-area .item{display:grid;grid-template-columns:130px minmax(150px,1fr) minmax(200px,1.4fr) 20px;gap:12px;align-items:center}
+.content-area .item-product,.content-area .item-depth2,.content-area .item-depth3{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.content-area .item-product{color:#325feb;font-weight:800;font-size:13px}
+.content-area .item-depth2{font-weight:700;font-size:14px}
+.content-area .item-depth3{color:#6b7684;font-size:12px}
+@media(max-width:700px){.content-area .item{grid-template-columns:80px minmax(95px,1fr) minmax(110px,1fr) 12px;gap:6px}}
 </style>
 </head>
 <body>
@@ -304,13 +310,14 @@ function renderGroup(g, depth, path, kids, items, groups, canEdit) {
   mine.forEach((it, idx) => {
     const ok = it.url && isSafeUrl(it.url);
     const newTab = ok && targetOf(it) === 'new';
+    const productName = myPath.find(n => /PayPlay|페이플레이|생ZONE|생존|RETURN|리턴/i.test(n)) || myPath[0];
     const body = [
-      h('span', { class: 'index' }, it.code || '·'),
-      h('span', { class: 'info' },
-        h('strong', {}, it.title), it.desc && h('span', {}, it.desc)),
+      h('span', { class: 'item-product' }, productName),
+      h('span', { class: 'item-depth2' }, it.title),
+      h('span', { class: 'item-depth3' }, it.desc || '설명 없음'),
       ok && h('span', { class: 'arrow' }, newTab ? '↗' : '→'),
     ];
-    const card = ok
+        const card = ok
       ? h('a', { class: 'item', href: it.url, target: newTab ? '_blank' : '_self', rel: newTab ? 'noopener noreferrer' : null }, body)
       : h('div', { class: 'item' }, body);
     const row = h('div', { class: 'row' }, card);
