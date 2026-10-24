@@ -94,6 +94,16 @@ th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertic
 @media(max-width:1040px){.layout{grid-template-columns:135px 178px minmax(0,1fr)}.content-area{padding:16px}.top{padding:11px 14px}}
 @media(max-width:750px){.layout{grid-template-columns:112px minmax(0,1fr)}.menu{display:none}.primary-nav{padding:8px 4px}.primary-nav .mi{padding:10px 6px}.content-area{padding:12px}.top h1{font-size:17px}.top{gap:8px}.top .sub{display:none}}
 @media(max-width:500px){.layout{grid-template-columns:76px minmax(0,1fr)}.primary-nav .mi{font-size:11px}.primary-nav .mi .n{display:none}.content-area{padding:9px}.row{flex-direction:column}.ictl{grid-template-columns:repeat(4,minmax(0,1fr))}.item{padding:10px}.bar{gap:5px}.bar .btn{padding:6px 8px}}
+/* Compact two-line item layout: one full-width card per row */
+.content-area .list{display:flex;flex-direction:column;gap:7px}
+.content-area .row{width:100%;min-width:0}
+.content-area .item{padding:10px 14px;min-height:57px;border-radius:11px;gap:11px}
+.content-area .index{height:32px;min-width:32px;border-radius:9px;font-size:11px}
+.content-area .info strong{font-size:14px;margin:0 0 3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.content-area .info>span{font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.content-area .ictl{grid-template-columns:repeat(4,minmax(0,1fr));align-content:center}
+.content-area .arrow{font-size:17px}
+@media(max-width:700px){.content-area .ictl{grid-template-columns:repeat(2,minmax(0,1fr))}.content-area .item{padding:9px}.content-area .info strong{font-size:13px}}
 </style>
 </head>
 <body>
@@ -134,7 +144,7 @@ function h(tag, attrs, ...kids) {
   return e;
 }
 
-const state = { doc: null, user: null, filter: 'all', cat: null, manage: false };
+const state = { doc: null, user: null, filter: 'all', cat: null, manage: false, board: false };
 const STAGE = { official: '공식', test: '테스트', plan: '기획' };
 const todayStr = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const targetOf = (it) => it.target || (/^https?:\/\//i.test(it.url || '') ? 'new' : 'same');
@@ -193,6 +203,14 @@ function render() {
   const { groups, items } = state.doc.data;
   const kids = (pid) => groups.filter((g) => (g.parentId || null) === pid);
   const canEdit = !!state.user && state.manage;
+  if (state.board) {
+    $('#filters').replaceChildren();
+    renderPrimary(groups, items, kids);
+    $('#menu').replaceChildren(h('h5', {}, '자료 게시판'), h('div', { class: 'empty' }, '디자인 가이드 · 자료 · 링크 관리'));
+    app.append(h('iframe', { src: '/board.html', title: 'DCC 자료 게시판', style: 'width:100%;height:calc(100vh - 160px);min-height:620px;border:0;background:transparent;' }));
+    $('#note').textContent = '';
+    return;
+  }
   renderFilters(items);
   const f = state.filter;
   const itemOk = (i) => f === 'all' || (f === 'none' ? !i.stage : i.stage === f);
@@ -223,24 +241,26 @@ function renderPrimary(groups, items, kids) {
  const n=$('#primaryNav');n.innerHTML='';
  n.append(h('h5',{},'WORKSPACE · DCC'));
  const roots=kids(null);
- n.append(h('button',{class:'mi'+(state.cat===null?' on':''),onclick:()=>{state.cat=null;render()}},'전체 프로젝트'));
+ n.append(h('button',{class:'mi'+(!state.board&&state.cat===null?' on':''),onclick:()=>{state.board=false;state.cat=null;render()}},'전체 프로젝트'));
+ n.append(h('button',{class:'mi'+(state.board?' on':''),onclick:()=>{state.board=true;render()}},'자료 게시판 · 관리'));
  for(const g of roots){
   const descendants=new Set([g.id]); let changed=true;
   while(changed){changed=false;for(const x of groups){if(x.parentId&&descendants.has(x.parentId)&&!descendants.has(x.id)){descendants.add(x.id);changed=true}}}
   const selected=state.cat&&descendants.has(state.cat);
   const count=items.filter(i=>descendants.has(i.groupId)).length;
-  n.append(h('button',{class:'mi'+(selected?' on':''),onclick:()=>{state.cat=g.id;render()}},
+  n.append(h('button',{class:'mi'+(selected?' on':''),onclick:()=>{state.board=false;state.cat=g.id;render()}},
     h('span',{},g.name),h('span',{class:'n'},String(count))));
  }
 }
 
 function renderMenu(groups, items, kids) {
   const m = $('#menu'); m.innerHTML = '';
+  if (state.board) { m.append(h('h5', {}, '게시판'), h('a', { class: 'mi on', href: '/board.html', target: '_blank' }, '새 창으로 열기')); return; }
   m.append(h('h5', {}, '카테고리'));
   const count = (g) => items.filter((i) => i.groupId === g.id).length + kids(g.id).reduce((a, c) => a + count(c), 0);
-  m.append(h('button', { class: 'mi' + (state.cat ? '' : ' on'), onclick: () => { state.cat = null; render(); } }, h('span', {}, '전체 보기'), h('span', { class: 'n' }, String(items.length))));
+  m.append(h('button', { class: 'mi' + (state.cat ? '' : ' on'), onclick: () => { state.board = false; state.cat = null; render(); } }, h('span', {}, '전체 보기'), h('span', { class: 'n' }, String(items.length))));
   const walk = (pid, depth) => kids(pid).forEach((g) => {
-    m.append(h('button', { class: 'mi d' + Math.min(depth, 3) + (state.cat === g.id ? ' on' : ''), onclick: () => { state.cat = g.id; render(); } }, h('span', {}, g.name), h('span', { class: 'n' }, String(count(g)))));
+    m.append(h('button', { class: 'mi d' + Math.min(depth, 3) + (state.cat === g.id ? ' on' : ''), onclick: () => { state.board = false; state.cat = g.id; render(); } }, h('span', {}, g.name), h('span', { class: 'n' }, String(count(g)))));
     walk(g.id, depth + 1);
   });
   walk(null, 0);
@@ -287,11 +307,7 @@ function renderGroup(g, depth, path, kids, items, groups, canEdit) {
     const body = [
       h('span', { class: 'index' }, it.code || '·'),
       h('span', { class: 'info' },
-        h('strong', {}, it.title), it.desc && h('span', {}, it.desc),
-        h('div', { class: 'meta' },
-          h('span', { class: 'badge ' + (it.stage || '') }, STAGE[it.stage] || '미분류'),
-          it.date && h('span', { class: 'dt' }, '제작일 ' + it.date),
-          ok && h('span', { class: 'badge open' }, newTab ? '↗ 새 탭' : '→ 현재 탭'))),
+        h('strong', {}, it.title), it.desc && h('span', {}, it.desc)),
       ok && h('span', { class: 'arrow' }, newTab ? '↗' : '→'),
     ];
     const card = ok
